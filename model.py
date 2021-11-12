@@ -6,6 +6,28 @@ import torch.nn.functional as F
 
 from module import *
 
+class MLP_GAN(nn.Module):
+    def __init__(self, image_size=784, latent_size=128, hidden_size=256):
+        super().__init__()
+
+        self.D = nn.Sequential(
+                    nn.Linear(image_size, hidden_size),
+                    nn.LeakyReLU(0.2),
+                    nn.Linear(hidden_size, hidden_size),
+                    nn.LeakyReLU(0.2),
+                    nn.Linear(hidden_size, 1),
+                    nn.Sigmoid()
+                )
+        
+        self.G = nn.Sequential(
+                    nn.Linear(latent_size, hidden_size),
+                    nn.ReLU(),
+                    nn.Linear(hidden_size, hidden_size),
+                    nn.ReLU(),
+                    nn.Linear(hidden_size, image_size),
+                    nn.Tanh()
+                )
+
 
 class Generator32(nn.Module):
     r"""

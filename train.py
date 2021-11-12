@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument(
         "--im_size",
         type=int,
-        default=32,
+        default=28,
         help=(
             "Images are resized to this resolution. "
             "Models are automatically selected based on resolution."
@@ -144,7 +144,8 @@ def train(args):
         net_g = Generator64()
         net_d = Discriminator64()
     else:
-        raise NotImplementedError(f"Unsupported image size '{args.im_size}'.")
+        net_g = MLP_GAN().G
+        net_d = MLP_GAN().D
 
     # Configure optimizers
     opt_g = optim.Adam(net_g.parameters(), lr, betas)
@@ -159,7 +160,7 @@ def train(args):
     )
 
     # Configure dataloaders
-    train_dataloader, eval_dataloader = util.get_dataloaders(
+    train_dataloader, eval_dataloader = util.get_dataloaders_MNIST(
         args.data_dir, args.im_size, args.batch_size, eval_size, num_workers
     )
 
