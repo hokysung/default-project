@@ -36,8 +36,9 @@ def prepare_data_for_gan(x, nz, device):
     )
 
 def bce_loss(preds, labels):
-    bce = torch.nn.CrossEntropyLoss()
-    return bce(preds, labels).mean()
+    # bce = torch.nn.BCEWithLogitsLoss()
+    return F.cross_entropy(preds, labels)
+    # return bce(preds, F.one_hot(labels, num_classes = 10).float()).mean()
 
 def compute_loss_c(net_c, bce_loss, x, labels):
     r"""
@@ -56,11 +57,12 @@ def train_step(net, opt, sch, compute_loss):
     r"""
     General implementation to perform a training step.
     """
-
+    opt.zero_grad()
     net.train()
     loss, accuracy = compute_loss()
     net.zero_grad()
     loss.backward()
+    # nn.utils.clip_grad_value_(net.parameters(), clip_value=0.1)
     opt.step()
     sch.step()
 
@@ -201,10 +203,10 @@ class Trainer:
         """
 
         ckpt_paths = [f for f in os.listdir(self.ckpt_dir) if f.endswith(".pth")]
-        if ckpt_paths:  # Train from scratch if no checkpoints were found
-            ckpt_path = sorted(ckpt_paths, key=lambda f: int(f[:-4]))[-1]
-            ckpt_path = os.path.join(self.ckpt_dir, ckpt_path)
-            self._load_state_dict(torch.load(ckpt_path))
+        # if ckpt_paths:  # Train from scratch if no checkpoints were found
+        #     ckpt_path = sorted(ckpt_paths, key=lambda f: int(f[:-4]))[-1]
+        #     ckpt_path = os.path.join(self.ckpt_dir, ckpt_path)
+        #     self._load_state_dict(torch.load(ckpt_path))
 
     def _save_checkpoint(self):
         r"""
@@ -280,11 +282,9 @@ class Trainer:
                 if self.step != 0 and self.step % ckpt_every == 0:
                     self._save_checkpoint()
 
-                self.step += 1
-                if self.step > max_steps:
-                    return
-            
-            # breakpoint
+            self.step += 1
+            if self.step > max_steps:
+                return
 
     def eval(self):
         r"""

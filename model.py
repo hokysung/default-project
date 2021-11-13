@@ -28,10 +28,10 @@ class MLP_Discriminator(nn.Module):
         super().__init__()
 
         self.D1 = nn.Sequential(
-                    nn.Linear(image_size ** 2, hidden_size),
+                    nn.Linear(image_size ** 2, latent_size),
                     nn.LeakyReLU(0.2),
-                    nn.Linear(hidden_size, latent_size),
-                    nn.LeakyReLU(0.2)
+                    # nn.Linear(hidden_size, latent_size),
+                    # nn.LeakyReLU(0.2)
                 )
 
         self.D2 = nn.Sequential(
@@ -60,13 +60,7 @@ class MLP_Classifier(nn.Module):
             param.requires_grad = False
 
         self.C = nn.Sequential(
-            nn.Linear(latent_size, latent_size // 2),
-            nn.ReLU(),
-            nn.Linear(latent_size // 2, latent_size // 2),
-            nn.ReLU(),
-            nn.Linear(latent_size // 2, latent_size // 4),
-            nn.ReLU(),
-            nn.Linear(latent_size // 4, 10)
+            nn.Linear(latent_size, 10),
         )
     
     def forward(self, x):

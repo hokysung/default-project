@@ -72,7 +72,7 @@ def parse_args():
         help="Minibatch size used during training.",
     )
     parser.add_argument(
-        "--max_steps", type=int, default=15000, help="Number of steps to train for."
+        "--max_steps", type=int, default=1500000, help="Number of steps to train for."
     )
     parser.add_argument(
         "--repeat_d",
@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument(
         "--ckpt_every",
         type=int,
-        default=5000,
+        default=5,
         help="Number of steps between checkpointing.",
     )
     parser.add_argument(
@@ -155,7 +155,7 @@ def train(args):
 
     # Configure schedulers
     sch_c = optim.lr_scheduler.LambdaLR(
-        opt_c, lr_lambda=lambda s: 1.0 - ((s * args.repeat_d) / args.max_steps)
+        opt_c, lr_lambda=lambda s: 1.0 - (s / args.max_steps)
     )
     
     # Configure dataloaders

@@ -19,8 +19,9 @@ image_size = 28 # 784
 num_epochs = 150
 batch_size = 32
 
-experiment_condition = 'vanilla'
-# experiment_condition = 'cycle'
+# experiment_condition = 'vanilla'
+# experiment_condition = 'vanilla_easy'
+experiment_condition = 'cycle'
 
 save_dir = 'save_' + experiment_condition
 ckpt_dir = os.path.join(save_dir, 'checkpoints')
@@ -93,12 +94,15 @@ total_step = len(data_loader)
 for epoch in range(num_epochs):
     pbar = tqdm(data_loader)
     for i, (images, _) in enumerate(pbar):
+
         images = images.view(batch_size, -1)
         images = Variable(images)
+        d_inputs = images[:batch_size//2,:]
+        g_inputs = images[batch_size//2:,:]
         # Create the labels which are later used as input for the BCE loss
-        real_labels = torch.ones(batch_size, 1)
+        real_labels = torch.ones(batch_size//2, 1)
         real_labels = Variable(real_labels)
-        fake_labels = torch.zeros(batch_size, 1)
+        fake_labels = torch.zeros(batch_size//2, 1)
         fake_labels = Variable(fake_labels)
 
         # ================================================================== #
@@ -107,17 +111,17 @@ for epoch in range(num_epochs):
 
         # Compute BCE_Loss using real images where BCE_Loss(x, y): - y * log(D(x)) - (1-y) * log(1 - D(x))
         # Second term of the loss is always zero since real_labels == 1
-        outputs, _ = D(images)
+        outputs, _ = D(d_inputs)
         d_loss_real = criterion(outputs, real_labels)
         real_score = outputs
         
         # Compute BCELoss using fake images
         # First term of the loss is always zero since fake_labels == 0
-        if experiment_condition == 'vanilla':
+        if 'vanilla' in experiment_condition:
             z = torch.randn(batch_size, latent_size)
             z = Variable(z)
-        elif experiment_condition == 'cycle':
-            _, z = D(images)
+        elif 'cycle' in experiment_condition:
+            _, z = D(g_inputs)
         else:
             breakpoint()
         fake_images = G(z)
@@ -195,7 +199,7 @@ for epoch in range(num_epochs):
     plt.legend()
     plt.savefig(os.path.join(save_dir, 'accuracy.pdf'))
     plt.close()
-    
+
     if (epoch) % 20 == 0:
         ckpt_path = os.path.join(ckpt_dir, f"{epoch}.pth")
         torch.save(get_state_dict(epoch, D, G, g_optimizer, d_optimizer), ckpt_path)
