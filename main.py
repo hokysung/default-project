@@ -118,7 +118,7 @@ for epoch in range(num_epochs):
         # Compute BCELoss using fake images
         # First term of the loss is always zero since fake_labels == 0
         if 'vanilla' in experiment_condition:
-            z = torch.randn(batch_size, latent_size)
+            z = torch.randn(batch_size//2, latent_size)
             z = Variable(z)
         elif 'cycle' in experiment_condition:
             _, z = D(g_inputs)
@@ -140,8 +140,13 @@ for epoch in range(num_epochs):
         # ================================================================== #
 
         # Compute loss with fake images
-        z = torch.randn(batch_size, latent_size)
-        z = Variable(z)
+        if 'vanilla' in experiment_condition:
+            z = torch.randn(batch_size//2, latent_size)
+            z = Variable(z)
+        elif 'cycle' in experiment_condition:
+            _, z = D(g_inputs)
+        else:
+            breakpoint()
         fake_images = G(z)
         outputs, _ = D(fake_images)
         
@@ -200,7 +205,7 @@ for epoch in range(num_epochs):
     plt.savefig(os.path.join(save_dir, 'accuracy.pdf'))
     plt.close()
 
-    if (epoch) % 20 == 0:
+    if (epoch) % 5 == 0:
         ckpt_path = os.path.join(ckpt_dir, f"{epoch}.pth")
         torch.save(get_state_dict(epoch, D, G, g_optimizer, d_optimizer), ckpt_path)
         # torch.save(G.state_dict(), os.path.join(ckpt_dir, 'G--{}.ckpt'.format(epoch+1)))

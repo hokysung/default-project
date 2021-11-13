@@ -11,6 +11,8 @@ import torchvision.utils as vutils
 # from torchmetrics import IS, FID, KID
 import torchmetrics
 
+import matplotlib.pyplot as plt
+
 
 def prepare_data_for_inception(x, device):
     r"""
@@ -255,6 +257,8 @@ class Trainer:
 
         self._load_checkpoint()
 
+        accuracies = []
+
         while True:
             pbar = tqdm(self.train_dataloader)
             for x, y in pbar:
@@ -282,9 +286,31 @@ class Trainer:
                 if self.step != 0 and self.step % ckpt_every == 0:
                     self._save_checkpoint()
 
+            accuracies += [accuracy]
+
             self.step += 1
-            if self.step > max_steps:
-                return
+            if self.step >= 5:
+                break
+
+            
+            # plt.figure()
+            # plt.xlim(0, 6)
+            # plt.plot(range(1, 6), d_losses, label='d loss')
+            # plt.plot(range(1, 6), g_losses, label='g loss')    
+            # plt.legend()
+            # plt.savefig(os.path.join(save_dir, 'loss.pdf'))
+            # plt.close()
+
+        import numpy as np
+        np.save(os.path.join(os.path.join(self.ckpt_dir, 'accuracy.npy')), accuracies)
+
+        plt.figure()
+        plt.xlim(0, 6)
+        plt.ylim(0, 1)
+        plt.plot(range(1, 6), accuracies, label='accuracy')
+        plt.legend()
+        plt.savefig(os.path.join(self.ckpt_dir, 'accuracy.png'))
+        plt.close()
 
     def eval(self):
         r"""
