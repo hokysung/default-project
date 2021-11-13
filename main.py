@@ -18,11 +18,13 @@ hidden_size = 256
 image_size = 28 # 784
 num_epochs = 150
 batch_size = 32
-sample_dir = 'samples'
-save_dir = 'save'
 
 experiment_condition = 'vanilla'
 # experiment_condition = 'cycle'
+
+save_dir = 'save_' + experiment_condition
+ckpt_dir = os.path.join(save_dir, 'checkpoints')
+sample_dir = 'samples_' + experiment_condition
 
 # Create a directory if not exists
 if not os.path.exists(sample_dir):
@@ -30,6 +32,7 @@ if not os.path.exists(sample_dir):
 
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
+    os.makedirs(ckpt_dir)
 
 # Image processing
 transform = transforms.Compose([
@@ -70,6 +73,14 @@ def denorm(x):
 def reset_grad():
     d_optimizer.zero_grad()
     g_optimizer.zero_grad()
+
+def get_state_dict(epoch, D, G, g_optimizer, d_optimizer):
+    return {
+        "net_g": G.state_dict(),
+        "net_d": D.state_dict(),
+        "opt_g": g_optimizer.state_dict(),
+        "opt_d": d_optimizer.state_dict(),
+    }
 
 # Statistics to be saved
 d_losses = np.zeros(num_epochs)
@@ -184,11 +195,12 @@ for epoch in range(num_epochs):
     plt.legend()
     plt.savefig(os.path.join(save_dir, 'accuracy.pdf'))
     plt.close()
-
-    # Save model at checkpoints
-    if (epoch+1) % 20 == 0:
-        torch.save(G.state_dict(), os.path.join(save_dir, 'G--{}.ckpt'.format(epoch+1)))
-        torch.save(D.state_dict(), os.path.join(save_dir, 'D--{}.ckpt'.format(epoch+1)))
+    
+    if (epoch) % 20 == 0:
+        ckpt_path = os.path.join(ckpt_dir, f"{epoch}.pth")
+        torch.save(get_state_dict(epoch, D, G, g_optimizer, d_optimizer), ckpt_path)
+        # torch.save(G.state_dict(), os.path.join(ckpt_dir, 'G--{}.ckpt'.format(epoch+1)))
+        # torch.save(D.state_dict(), os.path.join(ckpt_dir, 'D--{}.ckpt'.format(epoch+1)))
 
 # Save the model checkpoints 
 torch.save(G.state_dict(), 'G.ckpt')
