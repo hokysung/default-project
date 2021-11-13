@@ -62,17 +62,16 @@ class MLP_Classifier(nn.Module):
         self.C = nn.Sequential(
             nn.Linear(latent_size, latent_size // 2),
             nn.ReLU(),
-            nn.Linear(latent_size // 2, latent_size // 4),
-            nn.ReLU(),
-            nn.Linear(latent_size // 4, 10)
+            nn.Linear(latent_size // 2, 10),
+            nn.Softmax()
         )
     
     def forward(self, x):
         batch_size = x.shape[0]
         x = x.reshape((batch_size, -1))
-        z = self.mlp(x)
+        # z = self.mlp(x)
         
-        return self.C(z)
+        return self.C(x)
 
 
 class Generator32(nn.Module):

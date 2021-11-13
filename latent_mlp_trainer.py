@@ -45,6 +45,7 @@ def compute_loss_c(net_c, bce_loss, x, labels):
 
     preds = net_c(x)
     loss = bce_loss(preds, labels)
+    # breakpoint()
 
     return loss
 
@@ -256,9 +257,9 @@ class Trainer:
                 # Training step
                 # reals, z = prepare_data_for_gan(data, self.nz, self.device)
                 loss_c = self._train_step_c(x, y)
-               
+
                 pbar.set_description(
-                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}"
+                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}|Accuracy:{loss_c}"
                 )
 
                 # if self.step != 0 and self.step % eval_every == 0:
@@ -279,3 +280,22 @@ class Trainer:
                 self.step += 1
                 if self.step > max_steps:
                     return
+            
+            # breakpoint
+
+    # def eval(self):
+    #     r"""
+    #     Performs GAN training, checkpointing and logging.
+    #     Attributes:
+    #         max_steps (int): Number of steps before stopping.
+    #         repeat_d (int): Number of discriminator updates before a generator update.
+    #         eval_every (int): Number of steps before logging to Tensorboard.
+    #         ckpt_every (int): Number of steps before checkpointing models.
+    #     """
+
+    #     self._load_checkpoint()
+
+    #     pbar = tqdm(self.eval_dataloader)
+    #     preds = []
+    #     for x, y in pbar:
+            

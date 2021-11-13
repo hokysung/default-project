@@ -177,6 +177,7 @@ def train(args):
 
     # Train model
     trainer.train(args.max_steps, args.repeat_d, args.eval_every, args.ckpt_every)
+    # trainer.eval()
 
 
 if __name__ == "__main__":
