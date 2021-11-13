@@ -9,6 +9,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.utils as vutils
 # from torchmetrics import IS, FID, KID
+import torchmetrics
 
 
 def prepare_data_for_inception(x, device):
@@ -298,7 +299,9 @@ class Trainer:
         self._load_checkpoint()
 
         pbar = tqdm(self.eval_dataloader)
-        preds = []
+        metric = torchmetrics.Accuracy()
+
         for x, y in pbar:
-            prediction = self.net_c(x)
-            breakpoint()
+            preds = self.net_c(x)
+            acc = metric(preds, y)
+        acc = metric.compute()
