@@ -62,8 +62,8 @@ class MLP_Classifier(nn.Module):
         self.C = nn.Sequential(
             nn.Linear(latent_size, latent_size // 2),
             nn.ReLU(),
-            nn.Linear(latent_size // 2, latent_size // 2),
-            nn.ReLU(),
+            # nn.Linear(latent_size // 2, latent_size // 2),
+            # nn.ReLU(),
             nn.Linear(latent_size // 2, latent_size // 4),
             nn.ReLU(),
             nn.Linear(latent_size // 4, 10),

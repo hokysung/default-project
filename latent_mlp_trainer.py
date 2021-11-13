@@ -261,7 +261,7 @@ class Trainer:
                 loss_c, accuracy = self._train_step_c(x, y)
 
                 pbar.set_description(
-                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}|Accuracy:{accuracy}"
+                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}|Accuracy:{'%.3f' % accuracy}"
                 )
 
                 # if self.step != 0 and self.step % eval_every == 0:
@@ -285,19 +285,20 @@ class Trainer:
             
             # breakpoint
 
-    # def eval(self):
-    #     r"""
-    #     Performs GAN training, checkpointing and logging.
-    #     Attributes:
-    #         max_steps (int): Number of steps before stopping.
-    #         repeat_d (int): Number of discriminator updates before a generator update.
-    #         eval_every (int): Number of steps before logging to Tensorboard.
-    #         ckpt_every (int): Number of steps before checkpointing models.
-    #     """
+    def eval(self):
+        r"""
+        Performs GAN training, checkpointing and logging.
+        Attributes:
+            max_steps (int): Number of steps before stopping.
+            repeat_d (int): Number of discriminator updates before a generator update.
+            eval_every (int): Number of steps before logging to Tensorboard.
+            ckpt_every (int): Number of steps before checkpointing models.
+        """
 
-    #     self._load_checkpoint()
+        self._load_checkpoint()
 
-    #     pbar = tqdm(self.eval_dataloader)
-    #     preds = []
-    #     for x, y in pbar:
-            
+        pbar = tqdm(self.eval_dataloader)
+        preds = []
+        for x, y in pbar:
+            prediction = self.net_c(x)
+            breakpoint()
