@@ -134,7 +134,7 @@ def train(args):
     torch.manual_seed(args.seed)
 
     # Set parameters
-    nz, lr, betas, eval_size, num_workers = (128, 2e-4, (0.0, 0.9), 1000, 4)
+    nz, lr, betas, eval_size, num_workers = (64, 2e-4, (0.0, 0.9), 1000, 4)
 
     # Configure models
     if args.im_size == 32:
@@ -144,8 +144,8 @@ def train(args):
         net_g = Generator64()
         net_d = Discriminator64()
     else:
-        net_g = MLP_GAN().G
-        net_d = MLP_GAN().D
+        net_g = MLP_Generator()
+        net_d = MLP_Discriminator()
 
     # Configure optimizers
     opt_g = optim.Adam(net_g.parameters(), lr, betas)

@@ -15,7 +15,7 @@ def prepare_data_for_inception(x, device):
     r"""
     Preprocess data to be feed into the Inception model.
     """
-
+    # breakpoint()
     x = F.interpolate(x, 299, mode="bicubic", align_corners=False)
     minv, maxv = float(x.min()), float(x.max())
     x.clamp_(min=minv, max=maxv).add_(-minv).div_(maxv - minv + 1e-5)
@@ -58,6 +58,7 @@ def hinge_loss_d(real_preds, fake_preds):
 
     return F.relu(1.0 - real_preds).mean() + F.relu(1.0 + fake_preds).mean()
 
+def BCE_loss_d(real_preds, fake_preds):
 
 def compute_loss_g(net_g, net_d, z, loss_func_g):
     r"""
@@ -75,7 +76,6 @@ def compute_loss_d(net_g, net_d, reals, z, loss_func_d):
     r"""
     General implementation to compute discriminator loss.
     """
-
     real_preds = net_d(reals).view(-1)
     fakes = net_g(z).detach()
     fake_preds = net_d(fakes).view(-1)
@@ -152,11 +152,11 @@ def evaluate(net_g, net_d, dataloader, nz, device, samples_z=None):
             fake_preds.append(compute_prob(fake_pred))
             reals = prepare_data_for_inception(reals, device)
             fakes = prepare_data_for_inception(fakes, device)
-            is_.update(fakes)
-            fid.update(reals, real=True)
-            fid.update(fakes, real=False)
-            kid.update(reals, real=True)
-            kid.update(fakes, real=False)
+            # is_.update(fakes)
+            # fid.update(reals, real=True)
+            # fid.update(fakes, real=False)
+            # kid.update(reals, real=True)
+            # kid.update(fakes, real=False)
 
         # Process metrics
         metrics = {
@@ -164,9 +164,9 @@ def evaluate(net_g, net_d, dataloader, nz, device, samples_z=None):
             "L(D)": torch.stack(loss_ds).mean().item(),
             "D(x)": torch.stack(real_preds).mean().item(),
             "D(G(z))": torch.stack(fake_preds).mean().item(),
-            "IS": is_.compute()[0].item(),
-            "FID": fid.compute().item(),
-            "KID": kid.compute()[0].item(),
+            # "IS": is_.compute()[0].item(),
+            # "FID": fid.compute().item(),
+            # "KID": kid.compute()[0].item(),
         }
 
         # Create samples

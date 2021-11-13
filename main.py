@@ -13,7 +13,7 @@ import numpy as np
 latent_size = 64
 hidden_size = 256
 image_size = 784
-num_epochs = 300
+num_epochs = 150
 batch_size = 32
 sample_dir = 'samples'
 save_dir = 'save'
