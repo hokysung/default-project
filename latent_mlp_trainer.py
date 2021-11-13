@@ -45,9 +45,11 @@ def compute_loss_c(net_c, bce_loss, x, labels):
 
     preds = net_c(x)
     loss = bce_loss(preds, labels)
-    # breakpoint()
+    pred_label = preds.argmax(dim=1)
+    correct = (pred_label == labels)
+    accuracy = correct.sum()/correct.shape[0]
 
-    return loss
+    return loss, accuracy
 
 def train_step(net, opt, sch, compute_loss):
     r"""
@@ -55,13 +57,13 @@ def train_step(net, opt, sch, compute_loss):
     """
 
     net.train()
-    loss = compute_loss()
+    loss, accuracy = compute_loss()
     net.zero_grad()
     loss.backward()
     opt.step()
     sch.step()
 
-    return loss
+    return loss, accuracy
 
 def evaluate(net_c, dataloader, nz, device, samples_z=None):
     r"""
@@ -89,7 +91,7 @@ def evaluate(net_c, dataloader, nz, device, samples_z=None):
 
             # Compute losses and save intermediate outputs
             
-            loss_c = compute_loss_c(
+            loss_c, accuracy = compute_loss_c(
                 net_c, 
                 bce_loss, 
                 x, 
@@ -256,10 +258,10 @@ class Trainer:
 
                 # Training step
                 # reals, z = prepare_data_for_gan(data, self.nz, self.device)
-                loss_c = self._train_step_c(x, y)
+                loss_c, accuracy = self._train_step_c(x, y)
 
                 pbar.set_description(
-                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}|Accuracy:{loss_c}"
+                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}|Accuracy:{accuracy}"
                 )
 
                 # if self.step != 0 and self.step % eval_every == 0:
