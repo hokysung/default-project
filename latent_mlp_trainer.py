@@ -35,7 +35,8 @@ def prepare_data_for_gan(x, nz, device):
     )
 
 def bce_loss(preds, labels):
-    return nn.CrossEntropy(preds, labels).mean()
+    bce = torch.nn.CrossEntropyLoss()
+    return bce(preds, labels).mean()
 
 def compute_loss_c(net_c, bce_loss, x, labels):
     r"""
@@ -233,7 +234,7 @@ class Trainer:
                 bce_loss, 
                 x, 
                 labels
-            )[0],
+            ),
         )
 
     def train(self, max_steps, repeat_d, eval_every, ckpt_every):
@@ -250,15 +251,14 @@ class Trainer:
 
         while True:
             pbar = tqdm(self.train_dataloader)
-            for data, _ in pbar:
+            for x, y in pbar:
 
                 # Training step
                 # reals, z = prepare_data_for_gan(data, self.nz, self.device)
-                breakpoint()
                 loss_c = self._train_step_c(x, y)
                
                 pbar.set_description(
-                    f"L(G):{loss_g.item():.2f}|L(D):{loss_d.item():.2f}|{self.step}/{max_steps}"
+                    f"L(C):{loss_c.item():.2f}|{self.step}/{max_steps}"
                 )
 
                 # if self.step != 0 and self.step % eval_every == 0:

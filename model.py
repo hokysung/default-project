@@ -54,7 +54,6 @@ class MLP_Classifier(nn.Module):
         super().__init__()
 
         self.latent_size = latent_size
-        breakpoint()
 
         self.mlp = mlp_discriminator.D1
         for param in self.mlp.parameters():
