@@ -2,9 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-out
-samples
-save
+out/
+samples/
+save/
 
 # Ignores dataset, checkpoints and logs
 *.jpg
