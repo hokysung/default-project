@@ -305,3 +305,4 @@ class Trainer:
             preds = self.net_c(x)
             acc = metric(preds, y)
         acc = metric.compute()
+        print(f"Accuracy: {acc}")
