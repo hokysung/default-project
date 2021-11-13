@@ -8,6 +8,7 @@ import torch.utils.tensorboard as tbx
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.utils as vutils
+from model import *
 # from torchmetrics import IS, FID, KID
 import torchmetrics
 
@@ -286,7 +287,7 @@ class Trainer:
             if self.step > max_steps:
                 return
 
-    def eval(self):
+    def eval(self, ckpt):
         r"""
         Performs GAN training, checkpointing and logging.
         Attributes:
@@ -296,7 +297,12 @@ class Trainer:
             ckpt_every (int): Number of steps before checkpointing models.
         """
 
-        self._load_checkpoint()
+        # self._load_checkpoint()
+        if ckpt:
+            checkpoint = torch.load(ckpt)
+            self.net_c = MLP_Classifier()
+            self.net_c.load_state_dict(checkpoint['net_d'])
+        
 
         pbar = tqdm(self.eval_dataloader)
         metric = torchmetrics.Accuracy()
