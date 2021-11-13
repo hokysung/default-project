@@ -145,8 +145,9 @@ def train(args):
     # Configure models
 
     mlp_discriminator = MLP_Discriminator()
-    # checkpoint = torch.load(args.mlp_d_checkpoint)
-    # mlp_discriminator.load_state_dict(checkpoint(['model_state_dict']))
+    if args.mlp_d_checkpoint:
+        checkpoint = torch.load(args.mlp_d_checkpoint)
+        mlp_discriminator.load_state_dict(checkpoint(['model_state_dict']))
     classifier = MLP_Classifier(mlp_discriminator = mlp_discriminator)
 
     # Configure optimizers
