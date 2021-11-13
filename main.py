@@ -195,13 +195,7 @@ for epoch in range(num_epochs):
     plt.legend()
     plt.savefig(os.path.join(save_dir, 'accuracy.pdf'))
     plt.close()
-
-    # Save model at checkpoints
-    if epoch != 0 and epoch % 20 == 0:
-            
-
-            torch.save(self._state_dict(), ckpt_path)
-
+    
     if (epoch) % 20 == 0:
         ckpt_path = os.path.join(ckpt_dir, f"{epoch}.pth")
         torch.save(get_state_dict(epoch, D, G, g_optimizer, d_optimizer), ckpt_path)
