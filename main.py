@@ -8,6 +8,7 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import pylab
 import numpy as np
+from tqdm import tqdm
 
 from model import *
 
@@ -20,8 +21,8 @@ batch_size = 32
 sample_dir = 'samples'
 save_dir = 'save'
 
-# experiment_condition = 'vanilla'
-experiment_condition = 'cycle'
+experiment_condition = 'vanilla'
+# experiment_condition = 'cycle'
 
 # Create a directory if not exists
 if not os.path.exists(sample_dir):
@@ -79,7 +80,8 @@ fake_scores = np.zeros(num_epochs)
 # Start training
 total_step = len(data_loader)
 for epoch in range(num_epochs):
-    for i, (images, _) in enumerate(data_loader):
+    pbar = tqdm(data_loader)
+    for i, (images, _) in enumerate(pbar):
         images = images.view(batch_size, -1)
         images = Variable(images)
         # Create the labels which are later used as input for the BCE loss
@@ -100,7 +102,7 @@ for epoch in range(num_epochs):
         
         # Compute BCELoss using fake images
         # First term of the loss is always zero since fake_labels == 0
-        if experiment_condition == 'baseline':
+        if experiment_condition == 'vanilla':
             z = torch.randn(batch_size, latent_size)
             z = Variable(z)
         elif experiment_condition == 'cycle':
@@ -145,11 +147,12 @@ for epoch in range(num_epochs):
         real_scores[epoch] = real_scores[epoch]*(i/(i+1.)) + real_score.mean().data.item()*(1./(i+1.))
         fake_scores[epoch] = fake_scores[epoch]*(i/(i+1.)) + fake_score.mean().data.item()*(1./(i+1.))
         
-        if (i+1) % 200 == 0:
-            print('Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
-                  .format(epoch, num_epochs, i+1, total_step, d_loss.data.item(), g_loss.data.item(), 
-                          real_score.mean().data.item(), fake_score.mean().data.item()))
-    
+        pbar.set_description(
+            'Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
+                .format(epoch, num_epochs, i+1, total_step, d_loss.data.item(), g_loss.data.item(), 
+                    real_score.mean().data.item(), fake_score.mean().data.item())
+        )
+
     # Save real images
     if (epoch+1) == 1:
         images = images.view(images.size(0), 1, 28, 28)
@@ -183,7 +186,7 @@ for epoch in range(num_epochs):
     plt.close()
 
     # Save model at checkpoints
-    if (epoch+1) % 50 == 0:
+    if (epoch+1) % 20 == 0:
         torch.save(G.state_dict(), os.path.join(save_dir, 'G--{}.ckpt'.format(epoch+1)))
         torch.save(D.state_dict(), os.path.join(save_dir, 'D--{}.ckpt'.format(epoch+1)))
 

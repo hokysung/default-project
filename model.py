@@ -31,9 +31,7 @@ class MLP_Discriminator(nn.Module):
                     nn.Linear(image_size ** 2, hidden_size),
                     nn.LeakyReLU(0.2),
                     nn.Linear(hidden_size, latent_size),
-                    nn.LeakyReLU(0.2),
-                    nn.Linear(hidden_size, latent_size),
-                    nn.LeakyReLU(0.2),
+                    nn.LeakyReLU(0.2)
                 )
 
         self.D2 = nn.Sequential(
