@@ -71,7 +71,7 @@ class MLP_Classifier(nn.Module):
         x = x.reshape((batch_size, -1))
         z = self.mlp(x)
         
-        return self.C(x)
+        return self.C(z)
 
 
 class Generator32(nn.Module):

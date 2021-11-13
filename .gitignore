@@ -5,6 +5,7 @@ __pycache__/
 out/
 samples*
 save*
+*.ckpt
 
 # Ignores dataset, checkpoints and logs
 *.jpg
