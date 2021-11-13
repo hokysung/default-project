@@ -27,8 +27,15 @@ class MLP_Discriminator(nn.Module):
     def __init__(self, image_size=28, latent_size=64, hidden_size=256):
         super().__init__()
 
-        self.D = nn.Sequential(
+        self.D1 = nn.Sequential(
                     nn.Linear(image_size ** 2, hidden_size),
+                    nn.LeakyReLU(0.2),
+                    nn.Linear(hidden_size, latent_size),
+                    nn.LeakyReLU(0.2)
+                )
+
+        self.D2 = nn.Sequential(
+                    nn.Linear(latent_size, hidden_size),
                     nn.LeakyReLU(0.2),
                     nn.Linear(hidden_size, hidden_size),
                     nn.LeakyReLU(0.2),
@@ -39,7 +46,8 @@ class MLP_Discriminator(nn.Module):
     def forward(self, x):
         batch_size = x.shape[0]
         x = x.reshape((batch_size, -1))
-        return self.D(x)
+        z = self.D1(x)
+        return self.D2(z), z
 
 class MLP_Classifier(nn.Module): 
     def __init__(self, mlp_discriminator=None, latent_size=64):

@@ -8,15 +8,21 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import pylab
 import numpy as np
+from tqdm import tqdm
+
+from model import *
 
 # Hyper-parameters
 latent_size = 64
 hidden_size = 256
-image_size = 784
+image_size = 28 # 784
 num_epochs = 150
 batch_size = 32
 sample_dir = 'samples'
 save_dir = 'save'
+
+experiment_condition = 'vanilla'
+# experiment_condition = 'cycle'
 
 # Create a directory if not exists
 if not os.path.exists(sample_dir):
@@ -43,22 +49,10 @@ data_loader = torch.utils.data.DataLoader(dataset=mnist,
                                           shuffle=True)
 
 # Discriminator
-D = nn.Sequential(
-    nn.Linear(image_size, hidden_size),
-    nn.LeakyReLU(0.2),
-    nn.Linear(hidden_size, hidden_size),
-    nn.LeakyReLU(0.2),
-    nn.Linear(hidden_size, 1),
-    nn.Sigmoid())
+D = MLP_Discriminator(image_size, latent_size, hidden_size)
 
-# Generator 
-G = nn.Sequential(
-    nn.Linear(latent_size, hidden_size),
-    nn.ReLU(),
-    nn.Linear(hidden_size, hidden_size),
-    nn.ReLU(),
-    nn.Linear(hidden_size, image_size),
-    nn.Tanh())
+# Generator
+G = MLP_Generator(image_size, latent_size, hidden_size)
 
 # Device setting
 D = D
@@ -86,7 +80,8 @@ fake_scores = np.zeros(num_epochs)
 # Start training
 total_step = len(data_loader)
 for epoch in range(num_epochs):
-    for i, (images, _) in enumerate(data_loader):
+    pbar = tqdm(data_loader)
+    for i, (images, _) in enumerate(pbar):
         images = images.view(batch_size, -1)
         images = Variable(images)
         # Create the labels which are later used as input for the BCE loss
@@ -101,16 +96,21 @@ for epoch in range(num_epochs):
 
         # Compute BCE_Loss using real images where BCE_Loss(x, y): - y * log(D(x)) - (1-y) * log(1 - D(x))
         # Second term of the loss is always zero since real_labels == 1
-        outputs = D(images)
+        outputs, _ = D(images)
         d_loss_real = criterion(outputs, real_labels)
         real_score = outputs
         
         # Compute BCELoss using fake images
         # First term of the loss is always zero since fake_labels == 0
-        z = torch.randn(batch_size, latent_size)
-        z = Variable(z)
+        if experiment_condition == 'vanilla':
+            z = torch.randn(batch_size, latent_size)
+            z = Variable(z)
+        elif experiment_condition == 'cycle':
+            _, z = D(images)
+        else:
+            breakpoint()
         fake_images = G(z)
-        outputs = D(fake_images)
+        outputs, _ = D(fake_images)
         d_loss_fake = criterion(outputs, fake_labels)
         fake_score = outputs
         
@@ -128,7 +128,7 @@ for epoch in range(num_epochs):
         z = torch.randn(batch_size, latent_size)
         z = Variable(z)
         fake_images = G(z)
-        outputs = D(fake_images)
+        outputs, _ = D(fake_images)
         
         # We train G to maximize log(D(G(z)) instead of minimizing log(1-D(G(z)))
         # For the reason, see the last paragraph of section 3. https://arxiv.org/pdf/1406.2661.pdf
@@ -147,11 +147,12 @@ for epoch in range(num_epochs):
         real_scores[epoch] = real_scores[epoch]*(i/(i+1.)) + real_score.mean().data.item()*(1./(i+1.))
         fake_scores[epoch] = fake_scores[epoch]*(i/(i+1.)) + fake_score.mean().data.item()*(1./(i+1.))
         
-        if (i+1) % 200 == 0:
-            print('Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
-                  .format(epoch, num_epochs, i+1, total_step, d_loss.data.item(), g_loss.data.item(), 
-                          real_score.mean().data.item(), fake_score.mean().data.item()))
-    
+        pbar.set_description(
+            'Epoch [{}/{}], Step [{}/{}], d_loss: {:.4f}, g_loss: {:.4f}, D(x): {:.2f}, D(G(z)): {:.2f}' 
+                .format(epoch, num_epochs, i+1, total_step, d_loss.data.item(), g_loss.data.item(), 
+                    real_score.mean().data.item(), fake_score.mean().data.item())
+        )
+
     # Save real images
     if (epoch+1) == 1:
         images = images.view(images.size(0), 1, 28, 28)
@@ -185,7 +186,7 @@ for epoch in range(num_epochs):
     plt.close()
 
     # Save model at checkpoints
-    if (epoch+1) % 50 == 0:
+    if (epoch+1) % 20 == 0:
         torch.save(G.state_dict(), os.path.join(save_dir, 'G--{}.ckpt'.format(epoch+1)))
         torch.save(D.state_dict(), os.path.join(save_dir, 'D--{}.ckpt'.format(epoch+1)))
 
