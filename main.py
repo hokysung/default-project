@@ -9,14 +9,19 @@ import matplotlib.pyplot as plt
 import pylab
 import numpy as np
 
+from model import *
+
 # Hyper-parameters
 latent_size = 64
 hidden_size = 256
-image_size = 784
+image_size = 28 # 784
 num_epochs = 150
 batch_size = 32
 sample_dir = 'samples'
 save_dir = 'save'
+
+# experiment_condition = 'vanilla'
+experiment_condition = 'cycle'
 
 # Create a directory if not exists
 if not os.path.exists(sample_dir):
@@ -43,22 +48,10 @@ data_loader = torch.utils.data.DataLoader(dataset=mnist,
                                           shuffle=True)
 
 # Discriminator
-D = nn.Sequential(
-    nn.Linear(image_size, hidden_size),
-    nn.LeakyReLU(0.2),
-    nn.Linear(hidden_size, hidden_size),
-    nn.LeakyReLU(0.2),
-    nn.Linear(hidden_size, 1),
-    nn.Sigmoid())
+D = MLP_Discriminator(image_size, latent_size, hidden_size)
 
-# Generator 
-G = nn.Sequential(
-    nn.Linear(latent_size, hidden_size),
-    nn.ReLU(),
-    nn.Linear(hidden_size, hidden_size),
-    nn.ReLU(),
-    nn.Linear(hidden_size, image_size),
-    nn.Tanh())
+# Generator
+G = MLP_Generator(image_size, latent_size, hidden_size)
 
 # Device setting
 D = D
@@ -101,16 +94,21 @@ for epoch in range(num_epochs):
 
         # Compute BCE_Loss using real images where BCE_Loss(x, y): - y * log(D(x)) - (1-y) * log(1 - D(x))
         # Second term of the loss is always zero since real_labels == 1
-        outputs = D(images)
+        outputs, _ = D(images)
         d_loss_real = criterion(outputs, real_labels)
         real_score = outputs
         
         # Compute BCELoss using fake images
         # First term of the loss is always zero since fake_labels == 0
-        z = torch.randn(batch_size, latent_size)
-        z = Variable(z)
+        if experiment_condition == 'baseline':
+            z = torch.randn(batch_size, latent_size)
+            z = Variable(z)
+        elif experiment_condition == 'cycle':
+            _, z = D(images)
+        else:
+            breakpoint()
         fake_images = G(z)
-        outputs = D(fake_images)
+        outputs, _ = D(fake_images)
         d_loss_fake = criterion(outputs, fake_labels)
         fake_score = outputs
         
@@ -128,7 +126,7 @@ for epoch in range(num_epochs):
         z = torch.randn(batch_size, latent_size)
         z = Variable(z)
         fake_images = G(z)
-        outputs = D(fake_images)
+        outputs, _ = D(fake_images)
         
         # We train G to maximize log(D(G(z)) instead of minimizing log(1-D(G(z)))
         # For the reason, see the last paragraph of section 3. https://arxiv.org/pdf/1406.2661.pdf
