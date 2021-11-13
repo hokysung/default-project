@@ -72,7 +72,7 @@ def parse_args():
         help="Minibatch size used during training.",
     )
     parser.add_argument(
-        "--max_steps", type=int, default=1500, help="Number of steps to train for."
+        "--max_steps", type=int, default=15000, help="Number of steps to train for."
     )
     parser.add_argument(
         "--repeat_d",
