@@ -41,7 +41,31 @@ class MLP_Discriminator(nn.Module):
         x = x.reshape((batch_size, -1))
         return self.D(x)
 
+class MLP_Classifier(nn.Module): 
+    def __init__(self, mlp_discriminator=None, latent_size=64):
+        super().__init__()
 
+        self.latent_size = latent_size
+        breakpoint()
+
+        self.mlp = mlp_discriminator.D1
+        for param in self.mlp.parameters():
+            param.requires_grad = False
+
+        self.C = nn.Sequential(
+            nn.Linear(latent_size, latent_size // 2),
+            nn.ReLU(),
+            nn.Linear(latent_size // 2, latent_size // 4),
+            nn.ReLU(),
+            nn.Linear(latent_size // 4, 10)
+        )
+    
+    def forward(self, x):
+        batch_size = x.shape[0]
+        x = x.reshape((batch_size, -1))
+        z = self.mlp(x)
+        
+        return self.C(z)
 
 
 class Generator32(nn.Module):
