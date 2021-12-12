@@ -9,6 +9,8 @@ import util
 from model import *
 from latent_mlp_trainer import Trainer
 
+import matplotlib.pyplot as plt
+import numpy as np
 
 def parse_args():
     r"""
@@ -185,8 +187,31 @@ def train(args):
 
     # Train model
     trainer.train(args.max_steps, args.repeat_d, args.eval_every, args.ckpt_every)
-    trainer.eval(args.ckpt_total)
+    acc = trainer.eval(args.ckpt_total)
 
+    return acc
 
 if __name__ == "__main__":
     train(parse_args())
+
+    # ckpt_dir = "./save_vanilla_easy/checkpoints/"
+    # accs = []
+    # for epoch in range(40)[::2]:
+    #     args = parse_args()
+    #     args.mlp_d_checkpoint = os.path.join(ckpt_dir, "{}.pth".format(epoch))
+    #     accs += [train(args)]
+
+    # np.save('../vanilla_easy_res.npy', np.array(accs))
+    # plt.plot(accs)
+    # plt.show()
+
+    # ckpt_dir = "./save_cycle/checkpoints/"
+    # accs = []
+    # for epoch in range(40)[::2]:
+    #     args = parse_args()
+    #     args.mlp_d_checkpoint = os.path.join(ckpt_dir, "{}.pth".format(epoch))
+    #     accs += [train(args)]
+
+    # np.save('../cycle_res.npy', np.array(accs))
+    # plt.plot(accs)
+    # plt.show()

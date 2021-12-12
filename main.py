@@ -21,7 +21,7 @@ batch_size = 32
 
 # experiment_condition = 'vanilla'
 # experiment_condition = 'vanilla_easy'
-experiment_condition = 'cycle'
+experiment_condition = 'cycle_lr'
 
 save_dir = 'save_' + experiment_condition
 ckpt_dir = os.path.join(save_dir, 'checkpoints')
@@ -64,8 +64,8 @@ G = G
 
 # Binary cross entropy loss and optimizer
 criterion = nn.BCELoss()
-d_optimizer = torch.optim.Adam(D.parameters(), lr=0.0002)
-g_optimizer = torch.optim.Adam(G.parameters(), lr=0.0002)
+d_optimizer = torch.optim.Adam(D.parameters(), lr=0.00005)
+g_optimizer = torch.optim.Adam(G.parameters(), lr=0.0001)
 
 def denorm(x):
     out = (x + 1) / 2
@@ -205,7 +205,7 @@ for epoch in range(num_epochs):
     plt.savefig(os.path.join(save_dir, 'accuracy.pdf'))
     plt.close()
 
-    if (epoch) % 5 == 0:
+    if (epoch) % 2 == 0:
         ckpt_path = os.path.join(ckpt_dir, f"{epoch}.pth")
         torch.save(get_state_dict(epoch, D, G, g_optimizer, d_optimizer), ckpt_path)
         # torch.save(G.state_dict(), os.path.join(ckpt_dir, 'G--{}.ckpt'.format(epoch+1)))

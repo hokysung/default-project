@@ -338,3 +338,4 @@ class Trainer:
             acc = metric(preds, y)
         acc = metric.compute()
         print(f"Accuracy: {acc}")
+        return acc
